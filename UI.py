@@ -41,11 +41,12 @@ def RunML(baselineMLbox, filename):
     algorithms = []
     for i in baselineMLbox.curselection():
         algorithms.append(baselineMLbox.get(i))
-
+    print(clicked.get())
     print(filename)
     print(algorithms)
     p = pipeline(algorithms, filename)
     p.run()
+    
 def browseFiles():
     print("I was run")
     global filename

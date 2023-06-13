@@ -13,6 +13,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import AdaBoostClassifier
+from sklearn.preprocessing import Normalizer
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import ExtraTreesClassifier
@@ -38,10 +39,19 @@ class pipeline:
         print(self.dataset.describe)
         self.X = self.dataset.values[:, 0:self.dataset.values.shape[1]-1]
         self.Y = self.dataset.values[:, self.dataset.values.shape[1]-1]
+        if self.doesListContain(self.algorithmList, "Normalize Input Data"):
+            self.scaler = Normalizer().fit(self.X)
+            self.X = scaler.transform(self.X)
+        if self.doesListContain(self.algorithmList, "Standardize Input Data"):
+            self.scaler = StandardScaler().fit(self.X)
+            self.X = scaler.transform(self.X)
+
         print(self.Y)
         print(self.X[:, 130:])
         X_train, X_validation, Y_train, Y_validation = train_test_split(self.X, self.Y, test_size=0.2, random_state=7)
         num_folds=10
+
+
         if self.doesListContain(self.algorithmList, "Histogram"):
             self.dataset.hist()
         if self.doesListContain(self.algorithmList, "Correlation Matrix"):
@@ -98,24 +108,52 @@ class pipeline:
             self.models.append(('RF', RandomForestClassifier(n_estimators=100)))
         if self.doesListContain(self.algorithmList, "ET"):
             self.models.append(('ET', ExtraTreesClassifier(n_estimators=100)))
-            
-        self.results = []
-        self.names = []
-        for name, model in self.models:
-            self.kfold = KFold(n_splits=10, random_state=7, shuffle=True)
-            self.cv_results = cross_val_score(model, self.X, self.Y, cv=self.kfold)
-            self.results.append(self.cv_results)
-            
-            self.names.append(name)
-            msg = "%s: %f (%f)" % (name, self.cv_results.mean(), self.cv_results.std())
-            print(msg)
-        # Compare Algorithms
-        fig = pyplot.figure()
-        fig.suptitle('Algorithm Comparison')
-        ax = fig.add_subplot(111)
-        pyplot.boxplot(self.results)
-        ax.set_xticklabels(self.names)
+        if self.doesListContain(self.algorithmList, "K-Fold-10(Accuracy and SDev)"):
+            self.results = []
+            self.names = []
+            for name, model in self.models:
+                self.kfold = KFold(n_splits=10, random_state=7, shuffle=True)
+                self.cv_results = cross_val_score(model, self.X, self.Y, cv=self.kfold)
+                self.results.append(self.cv_results)
+                
+                self.names.append(name)
+                msg = "%s: %f (%f)" % (name, self.cv_results.mean(), self.cv_results.std())
+                print(msg)
+            # Compare Algorithms
+            fig = pyplot.figure()
+            fig.suptitle('Algorithm Comparison')
+            ax = fig.add_subplot(111)
+            pyplot.boxplot(self.results)
+            ax.set_xticklabels(self.names)
+        if self.doesListContain(self.algorithmList, "Accuracy"):
+            for name, model in self.models:
+                model.fit(X_train, Y_train)
+                self.result = model.score(X_test, Y_test)
+                print("Accuracy("+name+"): %.3f%%" % (self.result*100.0))
+        if self.doesListContain(self.algorithmList, "ROF"):
+            for name, model in self.models:
+                scoring = 'roc_auc'
+                results = cross_val_score(model, X, Y, cv=kfold, scoring=scoring)
+                print("AUC: %.3f (%.3f)" % (results.mean(), results.std()))
 
+        if self.doesListContain(self.algorithmList, "LogLoss"):
+            for name, model in self.models:
+                self.scoring = 'neg_log_loss'
+                self.kfold = KFold(n_splits=10, random_state=7, shuffle=True)
+                self.results = cross_val_score(model, X, Y, cv=self.kfold, scoring=self.scoring)
+
+        if self.doesListContain(self.algorithmList, "Classification Report"):
+            for name, model in self.models:
+                model.fit(X_train, Y_train)
+                predicted = model.predict(X_test)
+                report = classification_report(Y_test, predicted)
+                print(report)
+        if self.doesListContain(self.algorithmList, "Confusion Matrix"):
+            for name, model in self.models:
+                    model.fit(X_train, Y_train)
+                    predicted = model.predict(X_test)
+                    matrix = confusion_matrix(Y_test, predicted)
+                    print(matrix)
         if self.doesListContain(self.algorithmList, "KNN(Highly Tuned)"):
             # Tune scaled KNN
             scaler = StandardScaler().fit(X_train)
