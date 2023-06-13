@@ -20,7 +20,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
 #ASD=0, TD=1
-filenames = "C:/Users/Sean/Downloads/Delta power gamma peak_Edited.csv"
+
 class pipeline:
     def __init__(self, algorithmList, filename):
         self.filename = filename
@@ -42,34 +42,41 @@ class pipeline:
         print(self.X[:, 130:])
         X_train, X_validation, Y_train, Y_validation = train_test_split(self.X, self.Y, test_size=0.2, random_state=7)
         num_folds=10
-        self.dataset.hist()
-        self.fig = pyplot.figure()
-        self.cax = self.fig.add_subplot(111).matshow(self.dataset.corr(), vmin=-1, vmax=1, interpolation='none')
-        self.fig.colorbar(self.cax)
+        if self.doesListContain(self.algorithmList, "Histogram"):
+            self.dataset.hist()
+        if self.doesListContain(self.algorithmList, "Correlation Matrix"):
+            self.fig = pyplot.figure()
+            self.cax = self.fig.add_subplot(111).matshow(self.dataset.corr(), vmin=-1, vmax=1, interpolation='none')
+            self.fig.colorbar(self.cax)
         #Feature Importance
-        self.model = ExtraTreesClassifier(n_estimators=100)
-        self.model.fit(self.X, self.Y)
-        print("Feature Importance-----------------------------")
-        for i in range(0, self.names.size-1):
-            print("Name" +str(self.names[i]) +" rank" + str(self.model.feature_importances_[i]))
+        if self.doesListContain(self.algorithmList, "UFS(Feature Importance)"):
+            self.model = ExtraTreesClassifier(n_estimators=100)
+            self.model.fit(self.X, self.Y)
+            print("Feature Importance-----------------------------")
+            for i in range(0, self.names.size-1):
+                print("Name" +str(self.names[i]) +" Score" + str(self.model.feature_importances_[i]))
+            print("-----------------------------------------------")
 
         #RFE
-        self.model = LogisticRegression(solver='liblinear')
-        self.rfe = RFE(self.model)
-        self.fit = self.rfe.fit(self.X, self.Y)
-        print("RFE Score--------------------------------------")
-        for i in range(0, self.names.size-1):
-            print("Name" +str(self.names[i]) +" rank" + str(self.fit.ranking_[i]))
-        #print("Selected Features %s" %self.fit.support_)
-        #print("Feature Ranking %s" %self.fit.ranking_)
-
+        if self.doesListContain(self.algorithmList, "RF(Feature Importance)"):
+            model = LogisticRegression(solver='liblinear')
+            self.rfe = RFE(model, n_features_to_select=3) 
+            self.fit = self.rfe.fit(self.X, self.Y)
+            print("RFE Score--------------------------------------")
+            for i in range(0, self.names.size-1):
+                print("Name" +str(self.names[i]) +" Score" + str(self.fit.ranking_[i]))
+            #print("Selected Features %s" %self.fit.support_)
+            #print("Feature Ranking %s" %self.fit.ranking_)
+            print("-----------------------------------------------")
         #UFS
-        self.ufs = SelectKBest(score_func=f_classif, k=3)
-        self.fit = self.ufs.fit(self.X, self.Y)
-        print("UFS Score--------------------------------------")
-        for i in range(0, self.names.size-1):
-            print("Name: " +str(self.names[i]) +" Rank: " + str(self.fit.scores_[i]))
-        #Algorithms
+        if self.doesListContain(self.algorithmList, "RF(Feature Importance)"):
+            self.ufs = SelectKBest(score_func=f_classif, k=3)
+            self.fit = self.ufs.fit(self.X, self.Y)
+            print("UFS Score--------------------------------------")
+            for i in range(0, self.names.size-1):
+                print("Name: " +str(self.names[i]) +" Rank: " + str(self.fit.scores_[i]))
+            print("-----------------------------------------------")
+            #Algorithms
         self.models = []
         if self.doesListContain(self.algorithmList, "LR"):
             self.models.append(('LR', LogisticRegression(solver='liblinear')))
@@ -186,6 +193,9 @@ class pipeline:
                 print("%f (%f) with: %r" % (mean, stdev, param))
             
         pyplot.show()
-##p = pipeline([], filenames)
-##print(p.doesListContain(["hello", "Me"], "helo"))
-##        
+##files = ["C:/Users/Sean/Documents/Programing/Python/MachineLearning/Projects/OpticalFlowNonSigners/Reorganize/OF_corr_time_byParticipantEditedNoPersonSvNS.csv", "C:/Users/Sean/Documents/Programing/Python/MachineLearning/Projects/OpticalFlowNonSigners/Reorganize/SvNSOnlyDirect.csv", "C:/Users/Sean/Documents/Programing/Python/MachineLearning/Projects/OpticalFlowNonSigners/Reorganize/JustTimeAll4.csv"]
+##for file in files:
+##    print("file:" + file)
+##    p = pipeline(['UFS(Feature Importance)', 'RF(Feature Importance)', 'RFE(Feature Importance)', 'Correlation Matrix', 'Histogram', 'LR', 'LDA', 'KNN', 'CART', 'NB', 'SVM', 'AB', 'GBM', 'RF', 'ET', 'AB(Highly tuned)', 'SVM(Highly Tuned)', 'KNN(Highly Tuned)', 'GBM(Highly Tuned)'], filenames)
+##    p.run()
+##    print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
