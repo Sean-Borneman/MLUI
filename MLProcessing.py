@@ -125,35 +125,38 @@ class pipeline:
             ax = fig.add_subplot(111)
             pyplot.boxplot(self.results)
             ax.set_xticklabels(self.names)
-        if self.doesListContain(self.algorithmList, "Accuracy"):
-            for name, model in self.models:
-                model.fit(X_train, Y_train)
-                self.result = model.score(X_test, Y_test)
-                print("Accuracy("+name+"): %.3f%%" % (self.result*100.0))
+        for name, model in self.models:
+            if self.doesListContain(self.algorithmList, "Accuracy"):
+                    model.fit(X_train, Y_train)
+                    self.result = model.score(X_test, Y_test)
+                    print("Accuracy("+name+"): %.3f%%" % (self.result*100.0))
+            if self.doesListContain(self.algorithmList, "Classification Report"):
+                    model.fit(X_train, Y_train)
+                    predicted = model.predict(X_test)
+                    report = classification_report(Y_test, predicted)
+                    print(name + report)
+
+            if self.doesListContain(self.algorithmList, "Confusion Matrix"):
+                    model.fit(X_train, Y_train)
+                    predicted = model.predict(X_test)
+                    matrix = confusion_matrix(Y_test, predicted)
+                    print(name + matrix)
+
+
         if self.doesListContain(self.algorithmList, "ROF"):
             for name, model in self.models:
                 scoring = 'roc_auc'
                 results = cross_val_score(model, X, Y, cv=kfold, scoring=scoring)
-                print("AUC: %.3f (%.3f)" % (results.mean(), results.std()))
+                print("AUC("+name+"): %.3f (%.3f)" % (results.mean(), results.std()))
 
         if self.doesListContain(self.algorithmList, "LogLoss"):
             for name, model in self.models:
                 self.scoring = 'neg_log_loss'
                 self.kfold = KFold(n_splits=10, random_state=7, shuffle=True)
                 self.results = cross_val_score(model, X, Y, cv=self.kfold, scoring=self.scoring)
+                print("Logloss("+name+"): %.3f (%.3f)" % (results.mean(), results.std()))
 
-        if self.doesListContain(self.algorithmList, "Classification Report"):
-            for name, model in self.models:
-                model.fit(X_train, Y_train)
-                predicted = model.predict(X_test)
-                report = classification_report(Y_test, predicted)
-                print(report)
-        if self.doesListContain(self.algorithmList, "Confusion Matrix"):
-            for name, model in self.models:
-                    model.fit(X_train, Y_train)
-                    predicted = model.predict(X_test)
-                    matrix = confusion_matrix(Y_test, predicted)
-                    print(matrix)
+        
         if self.doesListContain(self.algorithmList, "KNN(Highly Tuned)"):
             # Tune scaled KNN
             scaler = StandardScaler().fit(X_train)
