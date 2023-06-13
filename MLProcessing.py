@@ -20,6 +20,7 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import confusion_matrix
 #ASD=0, TD=1
 
 class pipeline:
@@ -48,7 +49,7 @@ class pipeline:
 
         print(self.Y)
         print(self.X[:, 130:])
-        X_train, X_validation, Y_train, Y_validation = train_test_split(self.X, self.Y, test_size=0.2, random_state=7)
+        self.X_train, self.X_validation,self.Y_train, self.Y_validation = train_test_split(self.X, self.Y, test_size=0.2, random_state=7)
         num_folds=10
 
 
@@ -127,20 +128,22 @@ class pipeline:
             ax.set_xticklabels(self.names)
         for name, model in self.models:
             if self.doesListContain(self.algorithmList, "Accuracy"):
-                    model.fit(X_train, Y_train)
-                    self.result = model.score(X_test, Y_test)
+                    model.fit(self.X_train, self.Y_train)
+                    self.result = model.score(self.X_validation, self.Y_validation)
                     print("Accuracy("+name+"): %.3f%%" % (self.result*100.0))
             if self.doesListContain(self.algorithmList, "Classification Report"):
-                    model.fit(X_train, Y_train)
-                    predicted = model.predict(X_test)
-                    report = classification_report(Y_test, predicted)
-                    print(name + report)
+                    model.fit(self.X_train, self.Y_train)
+                    predicted = model.predict(self.X_validation)
+                    report = classification_report(self.Y_validation, predicted)
+                    print(name + "-----------------------------")
+                    print(report)
 
             if self.doesListContain(self.algorithmList, "Confusion Matrix"):
-                    model.fit(X_train, Y_train)
-                    predicted = model.predict(X_test)
-                    matrix = confusion_matrix(Y_test, predicted)
-                    print(name + matrix)
+                    model.fit(self.X_train, self.Y_train)
+                    predicted = model.predict(self.X_validation)
+                    matrix = confusion_matrix(self.Y_validation, predicted)
+                    print(name + "------------------")
+                    print(matrix)
 
 
         if self.doesListContain(self.algorithmList, "ROF"):

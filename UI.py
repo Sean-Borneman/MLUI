@@ -41,6 +41,7 @@ def RunML(baselineMLbox, filename):
     algorithms = []
     for i in baselineMLbox.curselection():
         algorithms.append(baselineMLbox.get(i))
+    algorithms.append(clicked.get())
     print(clicked.get())
     print(filename)
     print(algorithms)
@@ -94,9 +95,9 @@ listbox.insert(17, "SVM(Highly Tuned)")
 listbox.insert(18, "KNN(Highly Tuned)")
 listbox.insert(19, "GBM(Highly Tuned)")
 
-evalOptions = ["Accuracy", "K-Fold-10(Accuracy and SDev", "ROF", "LogLoss", "AUC", "Classification Report", "Confusion Matrix" ]
+evalOptions = ["Accuracy", "K-Fold-10(Accuracy and SDev)", "ROF", "LogLoss", "Classification Report", "Confusion Matrix" ]
 clicked = StringVar()
-clicked.set("Set Evaluation Metric for Core ML Algorithms")
+clicked.set("Set Evaluation Metric for Core ML Algorithms ( won't apply to Highly Tuned Alglorithms)")
 evalOptionsMenu = OptionMenu(window, clicked, *evalOptions)
 guidanceBaseline = Text(window,height=2,width=40)
 guidanceBaseline.insert('end', "Which processing algorithsm do you want to use")
