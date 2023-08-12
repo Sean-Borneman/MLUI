@@ -27,7 +27,7 @@ Col1  Col2  Col3  Classifier
 2. Select which algorithm you want to be performed.
 ![image](https://github.com/SB510/MLUI/assets/78392801/d8ae5402-4a44-4ba3-b25f-3a88f3ace734)
 3. Be sure to Set Evaluation Metric or the Machine Learning algorithsm will not run.
-   
+4. RUN!
 ### Future Additions
   In the future I'd love to add another quick UI for editing Data inputed into the UI and support for Drag & drop style Deep Learning Network construction
   
